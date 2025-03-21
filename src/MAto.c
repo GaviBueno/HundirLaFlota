@@ -7,21 +7,53 @@ void setBarcos(int n, int barcos[]){
 
 }
 
-void cazador(int barcos[], int tam, int** mapa[]){
-        // Generar dos números aleatorios entre 0 y n (nuestras coordenadas en la matriz)
-        int coorf = rand() % n;       
-        int coorc = rand() % n;
+void cazador(int barcos[], int tam, int** mapa){
+    // Generar dos números aleatorios entre 0 y n (nuestras coordenadas en la matriz)
+    int x = rand() % n;       
+       int y = rand() % n;
         // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
         //TODO
-        //char res[] = disparo(coorf, coorc);
-        char res[] = "agua";
-        if (res=="tocado"){
-            int mapa[coorf][coorc] = 2;
-            buscar();
+        //char res = disparo(coorf, coorc);
+        char res = "a";
+        if (res=="t"){
+            mapa[x][y] = 2;
+            for (int i = x - 1; i <= x + 1; i++) {
+                for (int j = y - 1; j <= y + 1; j++) {
+                    // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
+                    //TODO
+                     //char res = disparo(i, j);
+                    char res = "t";
+                    if (res=="t"){
+                        mapa[i][j] = 2;
+                        destruir(x,y,i,j,barcos[]);
+                        break
+                    }
+                }
         }
 }
-void buscar(){
-    //Buscamos al barco
+void destruir(int x, int y, int i, int j, int barcos[]){
+//destruimos al barco
+    if(y==j){
+    //Horizontal
+        for(g=i;g=!10000;g++){
+            // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
+            //TODO
+            //char res = disparo(g, j);
+            if(res=="a")  for(h=i;g=!10000;g--){
+                // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
+                //TODO
+                //char res = disparo(g, j);
+                if(res=="h"){
+
+                }
+            }if(res=="h"){
+                
+            }
+        }
+    }if(x==i){
+    //Vertical
+    }else
+    //Diagonal
 }
 /*Metodo IA(proporciones, barcos){
     Proporciones => Crear matriz formada por 0 (o recibirla porq ya se ha creado)

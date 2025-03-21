@@ -1,33 +1,36 @@
 #include <stdio.h>
-#include <stdlib.h> // Para malloc y free
+#include <stdlib.h>
 
 int main() {
-    int n;
-    printf("¿Cuántos elementos deseas? ");
-    scanf("%d", &n);
+    int n = 5;
 
-    // Reservar memoria para 'n' elementos enteros
-    int* numeros = (int*)malloc(n * sizeof(int));
+    // Reserva de memoria para una matriz de 3x3
+    int** matriz = (int**)malloc(n * sizeof(int*));
 
-    // Verificar si la asignación fue exitosa
-    if (numeros == NULL) {
-        printf("Error: No se pudo asignar memoria.\n");
-        return 1;
-    }
-
-    // Asignar valores al array
     for (int i = 0; i < n; i++) {
-        numeros[i] = i * 2; // Ejemplo de datos
+        matriz[i] = (int*)malloc(n * sizeof(int));
     }
 
-    // Mostrar el contenido
-    printf("Valores del array: ");
+    // Asignar valores
     for (int i = 0; i < n; i++) {
-        printf("%d ", numeros[i]);
+        for (int j = 0; j < n; j++) {
+            matriz[i][j] = i + j;
+        }
     }
 
-    // Liberar la memoria reservada
-    free(numeros);
+    // Mostrar la matriz
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            printf("%d ", matriz[i][j]);
+        }
+        printf("\n");
+    }
+
+    // Liberar memoria
+    for (int i = 0; i < n; i++) {
+        free(matriz[i]);
+    }
+    free(matriz);
 
     return 0;
 }

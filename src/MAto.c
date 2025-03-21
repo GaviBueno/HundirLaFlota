@@ -7,7 +7,7 @@ void setBarcos(int n, int barcos[]){
 
 }
 
-void cazador(int barcos[], int tam, int mapa[][]){
+void cazador(int barcos[], int tam, int** mapa[]){
         // Generar dos números aleatorios entre 0 y n (nuestras coordenadas en la matriz)
         int coorf = rand() % n;       
         int coorc = rand() % n;

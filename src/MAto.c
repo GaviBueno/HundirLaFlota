@@ -3,37 +3,56 @@
 #include <cstdio>
 #include <stdlib.h>
 
-void setBarcos(int n, int barcos[]){
-
-}
-
-void cazador(int barcos[], int tam, int** mapa){
-    // Generar dos números aleatorios entre 0 y n (nuestras coordenadas en la matriz)
-    int x = rand() % n;       
-       int y = rand() % n;
-        // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
-        //TODO
-        //char res = disparo(coorf, coorc);
-        char res = "a";
-        if (res=="t"){
-            mapa[x][y] = 2;
-            for (int i = x - 1; i <= x + 1; i++) {
-                for (int j = y - 1; j <= y + 1; j++) {
-                    // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
-                    //TODO
-                     //char res = disparo(i, j);
-                    char res = "t";
-                    if (res=="t"){
-                        mapa[i][j] = 2;
-                        destruir(x,y,i,j,barcos[]);
-                        break
-                    }
-                }
+Coordenada jugador0(int tam_mapa, int** mapa){
+    // Inicializa el Modo Automatico y baraja la lista de coordenadas que usaremos para buscar los barcos
+    int total_coord=tam_mapa*tam_mapa;
+    Coordenada coord[total_coord];
+    for (int i = 0; i < tam_mapa; i++) {
+        for (int j = 0; j < tam_mapa; j++) {
+            coord[i * tam_mapa + j].x = i;
+            coord[i * tam_mapa + j].y = j;
         }
+    }
+    barajar(coord, total_coord);
+    return coord[];
 }
-void destruir(int x, int y, int i, int j, int barcos[]){
+void cazador(int barcos[], int tam_mapa, char** mapa, Coordenada coord[],int *indice){
+    char res = "a";
+    int x=coord[*indice].x;
+    int y=coord[*indice].y;
+    *indice++;
+    if(enRango(x, y, tam_mapa)){
+        // Se envia a la seccion de jugabilidad las coordenadas para que esta indique a MAto si es agua, tocado o hundido
+        //TODO
+        //char res = disparo(x,y);
+    }   else    {
+        cazador(barcos[], tam_mapa, mapa[][], coord[], *indice);
+    }
+    if ("t"==res){
+        int dx[] = { -1, -1, -1, 0, 1, 1, 1, 0 };
+        int dy[] = { -1, 0, 1, 1, 1, 0, -1, -1 };
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            // TODO Crear funcion buscar
+            coord[*indice].x=-1;
+            coord[*indice].y=-1;
+            if (enRango(nx, ny, tam_mapa)) {
+                // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
+                //TODO
+                //char res = disparo(coord[*indice]);
+                char res = "t";
+                if (res=="t"){
+                    destruir(x,y,,nx,ny,barcos[]);
+                    break;
+                }        
+            }
+        }
+    }
+}
+void destruir(int x, int y, int nx, int ny, int barcos[]){
 //destruimos al barco
-    if(y==j){
+    if(y==ny){
     //Horizontal
         for(g=i;g=!10000;g++){
             // Se envia a la seccion de jugabilidad las dos coordenadas para que esta indique a MAto si es agua, tocado o hundido
@@ -54,6 +73,28 @@ void destruir(int x, int y, int i, int j, int barcos[]){
     //Vertical
     }else
     //Diagonal
+}
+
+// __AUXILIARES__
+void barajar(Coordenada *xy, int total) {
+// Algoritmo Fisher-Yates para barajar las coordenadas
+    for (int i = total - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        intercambiar(&xy[i], &xy[j]);
+    }
+}
+void intercambiar(Coordenada *a, Coordenada *b) {
+// Función para intercambiar dos elementos
+    Coordenada aux = *a;
+    *a = *b;
+    *b = aux;
+}
+int enRango(int x, int y, int tam_mapa) {
+    return x >= 0 && x < tam_mapa && y >= 0 && y < tam_mapa;
+}
+
+void setBarcos(int n, int barcos[]){
+
 }
 /*Metodo IA(proporciones, barcos){
     Proporciones => Crear matriz formada por 0 (o recibirla porq ya se ha creado)

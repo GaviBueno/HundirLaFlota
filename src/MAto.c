@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <stdlib.h>
 
-Coordenada jugador0(int tam_mapa, int** mapa){
+Coordenada jugador0(int tam_mapa){
     // Inicializa el Modo Automatico y baraja la lista de coordenadas que usaremos para buscar los barcos
     int total_coord=tam_mapa*tam_mapa;
     Coordenada coord[total_coord];
@@ -16,7 +16,18 @@ Coordenada jugador0(int tam_mapa, int** mapa){
     barajar(coord, total_coord);
     return coord[];
 }
-void cazador(int barcos[], int tam_mapa, char** mapa, Coordenada coord[],int *indice){
+void cazador(int barcos[], int tam_mapa, Coordenada coord[],int *indice){
+        if(res=="a")     *indice++;
+        if(res=="t"){
+
+        }
+/*
+Tocado
+        -> Lo busca t cambia la lista
+        tiene la lista porq lo ha encontrai
+*/
+
+    
     char res = "a";
     int x=coord[*indice].x;
     int y=coord[*indice].y;
@@ -26,6 +37,7 @@ void cazador(int barcos[], int tam_mapa, char** mapa, Coordenada coord[],int *in
         //TODO
         //char res = disparo(x,y);
     }   else    {
+        
         cazador(barcos[], tam_mapa, mapa[][], coord[], *indice);
     }
     if ("t"==res){
@@ -49,6 +61,7 @@ void cazador(int barcos[], int tam_mapa, char** mapa, Coordenada coord[],int *in
             }
         }
     }
+
 }
 void destruir(int x, int y, int nx, int ny, int barcos[]){
 //destruimos al barco

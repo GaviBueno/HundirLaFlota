@@ -27,6 +27,7 @@ Tocado
         tiene la lista porq lo ha encontrai
 */
 
+        
     
     char res = "a";
     int x=coord[*indice].x;
@@ -89,22 +90,7 @@ void destruir(int x, int y, int nx, int ny, int barcos[]){
 }
 
 // __AUXILIARES__
-void barajar(Coordenada *xy, int total) {
-// Algoritmo Fisher-Yates para barajar las coordenadas
-    for (int i = total - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        intercambiar(&xy[i], &xy[j]);
-    }
-}
-void intercambiar(Coordenada *a, Coordenada *b) {
-// Función para intercambiar dos elementos
-    Coordenada aux = *a;
-    *a = *b;
-    *b = aux;
-}
-int enRango(int x, int y, int tam_mapa) {
-    return x >= 0 && x < tam_mapa && y >= 0 && y < tam_mapa;
-}
+
 
 void setBarcos(int n, int barcos[]){
 

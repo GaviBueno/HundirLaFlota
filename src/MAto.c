@@ -145,3 +145,88 @@ void liberarMatriz(int** m, int n) {
     }
     free(m);
 }
+
+
+
+
+
+
+
+
+Coordenada jugador0(int tam_mapa){ //Predefinido tam_mapa = 9
+    // Inicializa el Modo Automatico y baraja la lista de coordenadas que usaremos para buscar los barcos
+    int total_coord = tam_mapa*tam_mapa;
+    Coordenada coord[total_coord];
+    for (int i = 0; i < tam_mapa; i++) {
+        for (int j = 0; j < tam_mapa; j++) {
+            coord[i * tam_mapa + j].x = i;
+            coord[i * tam_mapa + j].y = j;
+        }
+    }
+    barajar(coord, total_coord);
+    return coord[];
+}
+
+Coordenada cazador(Coordenada coord[], int *indice, int tam_mapa){  //Predefinido *indice=0 y tam_mapa=9
+    //Respuesta del disparo
+    Coordenada agua = Coordenada[10, 10];
+    while(coord[*indice] == agua){
+        *indice++;
+    }
+    int x = coord[*indice].x;
+    int y = coord[*indice].y;
+    /*
+    Se envia a la seccion de jugabilidad las coordenadas para que esta indique a MAto si es agua, tocado o hundido
+    TODO
+    char res = disparo(x,y);
+    */
+    if(res=="a"){
+        coord[*indice].x = 10;
+        coord[*indice].y = 10;
+    }
+    if(res=="t"){
+        Coordenada aux[];
+        if(coord[0] == agua){
+            Coordenada alrededor[] = obtenerAlrededor(x, y);
+
+            //Reordenamos
+            //{Alrededor, Aleatorio, {10,10}, {x,y}}
+            coord[]=cazador(coord[]);
+        }   else    {
+            /*
+            Seguimos estrategia
+                -> Horizontal
+                -> Vertical
+                -> Diagonal
+                Sino -> Disparamos de nuevo con *indice++
+            Reordenamos
+            buscarEstrategia
+                -> {x,y}
+                -> -{x,y}
+            Poner -{x,y}
+            */
+        }
+    }
+    return coord[];
+}
+
+Coordenada obtenerAlrededor(int x, int y, int tam) { // Predefinido  tam = 9
+    // Función para obtener las coordenadas alrededor de (x, y)
+    Coordenada alrededor[8];
+    int dx[] = {-1, -1, -1,  0, 0,  1, 1, 1};  // Desplazamientos en X
+    int dy[] = {-1,  0,  1, -1, 1, -1, 0, 1};  // Desplazamientos en Y
+    int n[] = 0;
+    for (int i = 0; i < 8; i++) {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if (nx >= 0 && nx < tam && ny >= 0 && ny < tam) {   // Verificamos si está dentro de los límites del mapa
+            alrededor[n].x = nx;
+            alrededor[n].y = ny;
+            n++;
+        }   else    {
+            alrededor[n].x = 10;
+            alrededor[n].y = 10;
+        }
+    }
+    return alrededor;
+}

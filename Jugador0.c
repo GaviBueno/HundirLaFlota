@@ -4,6 +4,8 @@
 #include <ctime>
 #include <vector>
 
+#define ultimo_estado coord[80]
+
 static int indice = 0;
 static Coordenada coord[81]; // Tamaño máximo para tam_mapa = 9
 static bool inicializado = false;
@@ -38,45 +40,87 @@ Coordenada cazador(int tam_mapa) {
     char res = disparo(c.x, c.y);
     if (res == 'a') {
         // Marcamos como usado
-        for (int i = 0; i < tam_mapa * tam_mapa; ++i) {
-            if (coord[i].x == c.x && coord[i].y == c.y) {
-                coord[i] = {10, 10};
-                break;
-            }
-        }
+        marcarAgua(tam_mapa,c);
     } else if (res == 't') {
-        Coordenada z = coord[80];
+        Coordenada z = ultimo_estado;
         // Aquí podrías insertar una lógica de búsqueda más avanzada
         if(z.x>=0){
             reordenarDespuesDeTocado(tam_mapa, c);
             indice = 0;
-            cazador(int tam_mapa);
+            return cazador(tam_mapa);
         }   else    {
-            if(c.y==abs(z.y)){
+            if(c.y == abs(z.y)) {
                 if(z.y<0){
-                    //Reordenar vectorial para disparar hacia abajo de la y
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x-i, c.y) == 'a') {
+                            break;
+                        }   if(disparo(c.x-i, c.y) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }                
                 }   else    {
-                    //Reordenar vectorial para disparar hacia arriba de la y
-                    z.y = -z.y;
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x+i, c.y) == 'a') {
+                            z.y = -z.y;
+                            break;
+                        }   if(disparo(c.x+i, c.y) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }
                 }
             }
             if(c.x==abs(z.x)){
                 if(z.y<0){
-                    //Reordenar horizontal para disparar hacia abajo de la x
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x, c.y-i) == 'a') {
+                            break;
+                        }   if(disparo(c.x, c.y-i) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }                
                 }   else    {
-                    //Reordenar horizontal para disparar hacia arriba de la x
-                    z.y = -z.y;
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x, c.y+i) == 'a') {
+                            z.y = -z.y;
+                            break;
+                        }   if(disparo(c.x, c.y+i) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }
                 }
             }   else    {
                 if(z.y<0){
-                    //Reordenar diagonal para disparar hacia abajo de la y
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x-i, c.y-i) == 'a') {
+                            break;
+                        }   if(disparo(c.x-i, c.y-i) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }                
                 }   else    {
-                    //Reordenar diagonal para disparar hacia arriba de la y
-                    z.y = -z.y;
+                    for (int i = 1; i < 10; i++) {
+                        marcarAgua(tam_mapa, c);
+                        if(disparo(c.x+i, c.y+i) == 'a') {
+                            z.y = -z.y;
+                            break;
+                        }   if(disparo(c.x+i, c.y+i) == 'h')   {
+                            barajar(coord, tam_mapa*tam_mapa);
+                            break;
+                        }
+                    }
                 }
             }
         }
-
         // Priorizar en la lista para el siguiente disparo, etc.
     }
     return c;
@@ -145,7 +189,7 @@ void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocada) {
     for (const auto& a : agua) {
         coord[index++] = a;
     }
-    Coordenada fin= [-tocada.x,tocada.y];
+    Coordenada fin= { -tocada.x, tocada.y };
     coord[index++] = fin;
 }   vector<Coordenada> obtenerAlrededor(int x, int y, int tam) {
     // Obtiene las coordenadas alrededor de una celda
@@ -160,4 +204,13 @@ void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocada) {
         }
     }
     return alrededor;
+}
+
+void marcarAgua(int tam_mapa, Coordenada c){
+    for (int i = 0; i < tam_mapa * tam_mapa; ++i) {
+            if (coord[i].x == c.x && coord[i].y == c.y) {
+                coord[i] = {10, 10};
+                break;
+            }
+        }
 }

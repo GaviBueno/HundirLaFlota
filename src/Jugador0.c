@@ -4,7 +4,7 @@
 #include <ctime>
 #include <vector>
 
-#define ultimo_estado coord[80]
+#define ultimaCoord coord[80]
 
 static int indice = 0;
 static Coordenada coord[81]; // Tamaño máximo para tam_mapa = 9
@@ -42,7 +42,7 @@ Coordenada cazador(int tam_mapa) {
         // Marcamos como usado
         marcarAgua(tam_mapa,c);
     } else if (res == 't') {
-        Coordenada z = ultimo_estado;
+        Coordenada z = ultimaCoord;
         // Aquí podrías insertar una lógica de búsqueda más avanzada
         if(z.x>=0){
             reordenarDespuesDeTocado(tam_mapa, c);
@@ -122,6 +122,19 @@ Coordenada cazador(int tam_mapa) {
             }
         }
         // Priorizar en la lista para el siguiente disparo, etc.
+    }   else if (res == 'h')    {
+        marcarAgua(tam_mapa, c);
+        if (ultimo_estado.x < 0) {
+            Coordenada inicio = { -ultimo_estado.x, ultimo_estado.y };
+            marcarContornoBarcoHundido(c, inicio, tam_mapa);
+        } else {
+            // Barco de una sola celda
+            std::vector<Coordenada> contorno = obtenerAlrededor(c.x, c.y, tam_mapa);
+            for (const auto& a : contorno) {
+                marcarAgua(tam_mapa, a);
+            }
+        }
+        ultimaCoord = { 0, 0 };  // Reset del estado de persecución
     }
     return c;
 }
@@ -213,4 +226,25 @@ void marcarAgua(int tam_mapa, Coordenada c){
                 break;
             }
         }
+}
+
+void marcarContornoBarcoHundido(Coordenada fin, Coordenada inicio, int tam_mapa) {
+    int dx = (fin.x - inicio.x);
+    int dy = (fin.y - inicio.y);
+    if (dx != 0) dx = dx / abs(dx);
+    if (dy != 0) dy = dy / abs(dy);
+    Coordenada actual = inicio;
+    while (true) {
+        // Marcar la celda actual como agua
+        marcarAgua(tam_mapa, actual);
+        // Marcar el alrededor de la celda actual
+        std::vector<Coordenada> alrededores = obtenerAlrededor(actual.x, actual.y, tam_mapa);
+        for (const auto& a : alrededores) {
+            marcarAgua(tam_mapa, a);
+        }
+        // Avanzamos
+        if (actual.x == fin.x && actual.y == fin.y) break;
+        actual.x += dx;
+        actual.y += dy;
+    }
 }

@@ -9,8 +9,14 @@ typedef struct {
 } Coordenada;
 
 // Declaraciones públicas necesarias
-Coordenada jugador0(int tam_mapa);
-Coordenada cazador(int tam_mapa);
+void inicializar(int tam_mapa, Coordenada coord[]);
+void cazador(int tam_mapa, Coordenada coord[]);
+Coordenada jugador(int tam_mapa, Coordenada coord[]);
+void barajar(Coordenada coord[], int total);
+void marcarAgua(int tam_mapa, Coordenada c, Coordenada coord[]);
+void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocado, Coordenada coord[]);
+void obtenerAlrededor(int x, int y, int tam, Coordenada coord[]);
+void marcarContornoBarcoHundido(Coordenada fin, Coordenada inicio, int tam_mapa, Coordenada coord[]);
 char disparo(int x, int y); // esta se redefine en el test
 
 #endif

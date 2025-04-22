@@ -1,56 +1,97 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <time.h>
-
+#include <stdlib.h>
 #include "jugador0.h"
 
 #define TAM_MAPA 9
 #define MAX_DISPAROS 100
 
 char mapa[TAM_MAPA][TAM_MAPA];  // Mapa del juego: '.' agua, 'B' barco
-char resultado_disparo(Coordenada c);
+int inicializado = 0;
 
 // Simula barcos en el mapa
 void inicializar_mapa() {
     memset(mapa, '.', sizeof(mapa));
 
     // Barcos horizontales
+    mapa[2][1] = 'B';
+    mapa[2][2] = 'B';
     mapa[2][3] = 'B';
-    mapa[2][4] = 'B';
-    mapa[2][5] = 'B';
 
     // Barcos verticales
-    mapa[6][1] = 'B';
-    mapa[7][1] = 'B';
-    mapa[8][1] = 'B';
+    mapa[6][1] = 'C';
+    mapa[7][1] = 'C';
+    mapa[8][1] = 'C';
+    mapa[5][1] = 'C';
 
     // Barco diagonal
-    mapa[0][0] = 'B';
-    mapa[1][1] = 'B';
-    mapa[2][2] = 'B';
+    mapa[6][5] = 'D';
+    mapa[4][3] = 'D';
+    mapa[5][4] = 'D';
+
+    mapa[0][8] = 'E';
+    mapa[1][7] = 'E';
 }
 
 // Disparo simulado según el mapa real
 char resultado_disparo(Coordenada c) {
-    if (c.x < 0 || c.x >= TAM_MAPA || c.y < 0 || c.y >= TAM_MAPA)
+    int x = c.x;
+    int y = c.y;
+
+    if (x < 0 || x >= TAM_MAPA || y < 0 || y >= TAM_MAPA)
         return 'a'; // fuera de límites = agua
 
-    if (mapa[c.x][c.y] == 'B') {
-        mapa[c.x][c.y] = 'X';
+    if (mapa[x][y] == 'B') {
+        mapa[x][y] = 'X';
 
         // Verificamos si el barco está completamente hundido
-        int tocado = 0;
         for (int i = 0; i < TAM_MAPA; i++) {
             for (int j = 0; j < TAM_MAPA; j++) {
                 if (mapa[i][j] == 'B')
-                    tocado++;
+                    return 't';  // aún quedan partes
             }
         }
-
-        return (tocado == 0) ? 'h' : 't';
+        return 'h';  // todos los barcos fueron hundidos
     }
 
+    if (mapa[x][y] == 'C') {
+        mapa[x][y] = 'X';
+
+        // Verificamos si el barco está completamente hundido
+        for (int i = 0; i < TAM_MAPA; i++) {
+            for (int j = 0; j < TAM_MAPA; j++) {
+                if (mapa[i][j] == 'C')
+                    return 't';  // aún quedan partes
+            }
+        }
+        return 'h';  // todos los barcos fueron hundidos
+    }
+
+    if (mapa[x][y] == 'D') {
+        mapa[x][y] = 'X';
+
+        // Verificamos si el barco está completamente hundido
+        for (int i = 0; i < TAM_MAPA; i++) {
+            for (int j = 0; j < TAM_MAPA; j++) {
+                if (mapa[i][j] == 'D')
+                    return 't';  // aún quedan partes
+            }
+        }
+        return 'h';  // todos los barcos fueron hundidos
+    }
+    if (mapa[x][y] == 'E') {
+        mapa[x][y] = 'X';
+        for (int i = 0; i < TAM_MAPA; i++) {
+            for (int j = 0; j < TAM_MAPA; j++) {
+                if (mapa[i][j] == 'E')  return 't';  // aún quedan partes
+            }
+        }
+        return 'h';  // todos los barcos fueron hundidos
+    }
+
+    if (mapa[x][y] == 'X') {
+        return 't';
+    }
     return 'a'; // Agua
 }
 
@@ -66,14 +107,28 @@ int main() {
     inicializar_mapa();
     printf("=== INICIO DEL TEST DE LA IA ===\n");
 
-    for (int turno = 0; turno < MAX_DISPAROS; ++turno) {
-        Coordenada c = cazador(TAM_MAPA);
-        if (c.x == 10 && c.y == 10) {
-            printf("La IA no tiene más coordenadas válidas.\n");
-            break;
+    Coordenada coord[81];
+    inicializar(TAM_MAPA, coord);  // Inicializa coordenadas
+    for (int i = 0; i < 81; i++) {
+        printf("%d:(%d, %d), ", i, coord[i].x, coord[i].y);
+    }
+    for (int turno = 0; turno < MAX_DISPAROS; turno++) {
+        printf("%d -> ",turno);
+        cazador(TAM_MAPA, coord);
+        int point = 0;
+        for (int i = 0; i < TAM_MAPA; i++) {
+            for (int j = 0; j < TAM_MAPA; j++) {
+                if (mapa[i][j] == 'B' || mapa[i][j] == 'C' || mapa[i][j] == 'D' || mapa[i][j] == 'E')
+                    point++;  // aún quedan partes
+            }
+        }
+        if (point == 0) {
+            for (int i = 0; i < 81; i++) {
+                printf("%d:(%d, %d), ", i, coord[i].x, coord[i].y);
+            }
+            printf("=== FIN DEL TEST ===\n");
+            return 0;
         }
     }
-
-    printf("=== FIN DEL TEST ===\n");
     return 0;
 }

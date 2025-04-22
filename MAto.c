@@ -230,3 +230,61 @@ Coordenada obtenerAlrededor(int x, int y, int tam) { // Predefinido  tam = 9
     }
     return alrededor;
 }
+
+
+
+
+if (res == 't')    {
+    Coordenada z = coord[80];
+    // Aquí podrías insertar una lógica de búsqueda más avanzada
+    if(z.x > 0) {
+        coord = reordenarDespuesDeTocado(tam_mapa, c, coord);
+        return cazador(tam_mapa, coord);
+    }   if(z.x < 0)    {
+        if(c.y == absolute(z.y)) {
+            for (int i = 1; i < 10; i++) {
+                coord = marcarAgua(tam_mapa, c);
+                if(disparo(c.x - i, c.y) == 'a') {
+                    coord[80] = {0, c.y};
+                    break;
+                }   if(disparo(c.x - i, c.y) == 'h')   {
+                    coord = barajar(coord, tam_mapa * tam_mapa);
+                    break;
+                }
+            }
+        }   if(c.x == absolute(z.x)){
+            for (int i = 1; i < 11; i++) {
+                coord = marcarAgua(tam_mapa, c);
+                if(disparo(c.x, c.y-i) == 'a') {
+                    coord[79] = {, -c.x};
+                    break;
+                }   if(disparo(c.x, c.y-i) == 'h')   {
+                    coord = barajar(coord, tam_mapa*tam_mapa);
+                    break;
+                }
+            }
+        }   else    {
+            for (int i = 1; i < 11; i++) {
+                marcarAgua(tam_mapa, c);
+                if(disparo(c.x-i, c.y-i) == 'a') {
+                    coord[80] = {0, 0};
+                    break;
+                }   if(disparo(c.x-i, c.y-i) == 'h')   {
+                        barajar(coord, tam_mapa*tam_mapa);
+                        break;
+                    }
+                }
+            }   else    {
+                for (int i = 1; i < 11; i++) {
+                    marcarAgua(tam_mapa, c);
+                    if(disparo(c.x+i, c.y+i) == 'a') {
+                        z.y = -z.y;
+                        break;
+                    }   if(disparo(c.x+i, c.y+i) == 'h')   {
+                        barajar(coord, tam_mapa*tam_mapa);
+                        break;
+                    }
+                }
+            }
+        }
+    }

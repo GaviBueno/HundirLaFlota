@@ -1,250 +1,416 @@
 #include "jugador0.h"
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <vector>
+#include <stdio.h>
 
-#define ultimaCoord coord[80]
-
-static int indice = 0;
-static Coordenada coord[81]; // Tamaño máximo para tam_mapa = 9
-static bool inicializado = false;
-
-// Simulación del resultado del disparo
-char disparo(int x, int y) {
-    // Esta función debe conectarse con la lógica del juego.
-    // Aquí se simula el resultado para propósitos de prueba:
-    return "atahundido"[rand() % 3]; // 'a', 't' o 'h'
-}
-
-Coordenada jugador0(int tam_mapa) {
+void inicializar(int tam_mapa, Coordenada coord[])  {
+    int total = tam_mapa * tam_mapa;
     // Devuelve una coordenada aleatoria no usada aún
-    if (!inicializado) {
         srand(time(0));
-        inicializar(tam_mapa);
-        inicializado = true;
-    }
-    while (indice < tam_mapa * tam_mapa && coord[indice].x == 10 && coord[indice].y == 10) {
-        ++indice;
-    }
-    if (indice < tam_mapa * tam_mapa) {
-        return coord[indice++];
-    } else {
-        return {10, 10}; // No quedan coordenadas válidas
-    }
+        // Función para inicializar coordenadas aleatorias
+        for (int i = 0; i < tam_mapa; ++i) {
+            for (int j = 0; j < tam_mapa; ++j) {
+                coord[i * tam_mapa + j].x = i+1;
+                coord[i * tam_mapa + j].y = j+1;
+            }
+        }
+    barajar(coord, total);
 }
 
-Coordenada cazador(int tam_mapa) {
+void cazador(int tam_mapa, Coordenada coord[]) {
     // Modo cazador (más inteligente tras un acierto)
-    Coordenada c = jugador0(tam_mapa);
-    char res = disparo(c.x, c.y);
-    if (res == 'a') {
+    int total = tam_mapa * tam_mapa;
+    Coordenada c;
+    c.x = jugador(tam_mapa, coord).x;
+    c.y = jugador(tam_mapa, coord).y;
+    char res = disparo(c.x-1, c.y-1);
+    if (res == 'a') marcarAgua(tam_mapa, c, coord);
         // Marcamos como usado
-        marcarAgua(tam_mapa,c);
-    } else if (res == 't') {
-        Coordenada z = ultimaCoord;
+    if (res == 't') {
+        Coordenada z;
+        z.x = coord[80].x;
+        z.y = coord[80].y;
+        int x = c.x;
+        int y = c.y;
+        Coordenada inicio;
+        inicio.x = absolute(z.x);
+        inicio.y = absolute(z.y);
+        Coordenada aux;
         // Aquí podrías insertar una lógica de búsqueda más avanzada
-        if(z.x>=0){
-            reordenarDespuesDeTocado(tam_mapa, c);
-            indice = 0;
-            return cazador(tam_mapa);
-        }   else    {
-            if(c.y == abs(z.y)) {
-                if(z.y<0){
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x-i, c.y) == 'a') {
-                            break;
-                        }   if(disparo(c.x-i, c.y) == 'h')   {
-                            barajar(coord, tam_mapa*tam_mapa);
+        if(z.x>=0) {
+                reordenarDespuesDeTocado(tam_mapa, c, coord);
+                cazador(tam_mapa, coord);
+        }
+        else    {
+            if(c.y == absolute(z.y)) {
+                if(z.y > 0) {
+                    for (int i = 1; i < tam_mapa+1; i++) {
+                        x++;
+                        if (x > 0 && x < tam_mapa+1) {
+                            res = disparo(c.x+i-1, c.y-1);
+                            if(res == 'a') {
+                                coord[total-1].x = z.x;
+                                coord[total-1].y = -z.y;
+                                aux.x = c.x+i;
+                                aux.y = c.y;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                coord[0].x = c.x;
+                                coord[0].y = c.y;
+                                break;
+                            }
+                            if(res == 'h')   {
+                                coord[total-1].x = 0;
+                                coord[total-1].y = 0;  // Reset del estado de persecución
+                                aux.x = c.x+i;
+                                aux.y = c.y;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                barajar(coord, tam_mapa*tam_mapa);
+                                cazador(tam_mapa, coord);
+                                break;
+                            }
+                        }
+                        else {
+                            z.x = z.x;
+                            z.y = -z.y;
+                            coord[total-1].x = z.x;
+                            coord[total-1].y = z.y;
+                            aux.x = c.x+i;
+                            aux.y = c.y+i;
+                            marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                            marcarAgua(tam_mapa, aux, coord);
                             break;
                         }
-                    }                
-                }   else    {
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x+i, c.y) == 'a') {
-                            z.y = -z.y;
-                            break;
-                        }   if(disparo(c.x+i, c.y) == 'h')   {
+                    }
+                }
+                if(z.y < 0){
+                    for (int i = 1; i < tam_mapa+1; i++) {
+                        if(disparo(c.x-i-1, c.y-1) == 'h')   {
+                            coord[total-1].x = 0;
+                            coord[total-1].y = 0;  // Reset del estado de persecución
+                            aux.x = c.x-i;
+                            aux.y = c.y;
+                            marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                            marcarAgua(tam_mapa, aux, coord);
                             barajar(coord, tam_mapa*tam_mapa);
+                            cazador(tam_mapa, coord);
                             break;
                         }
                     }
                 }
             }
-            if(c.x==abs(z.x)){
-                if(z.y<0){
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x, c.y-i) == 'a') {
-                            break;
-                        }   if(disparo(c.x, c.y-i) == 'h')   {
-                            barajar(coord, tam_mapa*tam_mapa);
-                            break;
+            else if(c.x == abs(z.x)) {
+                if(z.y > 0) {
+                    for (int i = 1; i < tam_mapa+1; i++) {
+                        y++;
+                        if (y > 0 && y < tam_mapa+1) {
+                            res = disparo(c.x-1, c.y+i-1);
+                            if(res == 'a') {
+                                coord[total-1].x = z.x;
+                                coord[total-1].y = -z.y;
+                                aux.x = c.x;
+                                aux.y = c.y+i-1;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                coord[0].x = c.x;
+                                coord[0].y = c.y;
+                                break;
+                            }
+                            if(res == 'h')   {
+                                coord[total-1].x = 0;
+                                coord[total-1].y = 0;  // Reset del estado de persecución                                aux.x = c.x+i;
+                                aux.x = c.x;
+                                aux.y = c.y+i-1;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                barajar(coord, tam_mapa*tam_mapa);
+                                cazador(tam_mapa, coord);
+                                break;
+                            }
                         }
-                    }                
-                }   else    {
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x, c.y+i) == 'a') {
-                            z.y = -z.y;
-                            break;
-                        }   if(disparo(c.x, c.y+i) == 'h')   {
-                            barajar(coord, tam_mapa*tam_mapa);
+                        else {
+                            coord[total-1].x = z.x;
+                            coord[total-1].y = z.y;
+                            aux.x = c.x;
+                            aux.y = c.y+i;
+                            marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                            marcarAgua(tam_mapa, aux, coord);
                             break;
                         }
                     }
                 }
-            }   else    {
-                if(z.y<0){
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x-i, c.y-i) == 'a') {
-                            break;
-                        }   if(disparo(c.x-i, c.y-i) == 'h')   {
+                if(z.y < 0){
+                    for (int i = 1; i < tam_mapa+1; i++) {
+                        if(disparo(c.x-1, c.y-i-1) == 'h')
+                            coord[total-1].x = 0;
+                            coord[total-1].y = 0;  // Reset del estado de persecución
+                            aux.x = c.x-i;
+                            aux.y = c.y;
+                            marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                            marcarAgua(tam_mapa, aux, coord);
                             barajar(coord, tam_mapa*tam_mapa);
+                            cazador(tam_mapa, coord);
                             break;
                         }
-                    }                
-                }   else    {
-                    for (int i = 1; i < 10; i++) {
-                        marcarAgua(tam_mapa, c);
-                        if(disparo(c.x+i, c.y+i) == 'a') {
-                            z.y = -z.y;
-                            break;
-                        }   if(disparo(c.x+i, c.y+i) == 'h')   {
-                            barajar(coord, tam_mapa*tam_mapa);
-                            break;
+                    }
+                }
+            else {
+                if(z.y > 0) {
+                    if (c.x+c.y != inicio.x+inicio.y) {
+                        for (int i = 1; i < tam_mapa+1; i++) {
+                            y++;
+                            x++;
+                            if (y > 0 && y < tam_mapa+1 && x > 0 && x < tam_mapa+1) {
+                                res = disparo(c.x+i-1, c.y+i-1);
+                                if(res == 'a') {
+                                    coord[total-1].x = z.x;
+                                    coord[total-1].y = -z.y;
+                                    aux.x = c.x+i-1;
+                                    aux.y = c.y+i-1;
+                                    marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                    coord[0].x = c.x;
+                                    coord[0].y = c.y;
+                                    break;
+                                }
+                                if(res == 'h')   {
+                                    coord[total-1].x = 0;
+                                    coord[total-1].y = 0;  // Reset del estado de persecución
+                                    aux.x = c.x+i;
+                                    aux.y = c.y+i;
+                                    marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                    marcarAgua(tam_mapa, aux, coord);
+                                    barajar(coord, tam_mapa*tam_mapa);
+                                    cazador(tam_mapa, coord);
+                                    break;
+                                }
+                            }
+                            else {
+                                z.x = z.x;
+                                z.y = -z.y;
+                                coord[total-1].x = z.x;
+                                coord[total-1].y = z.y;
+                                aux.x = c.x+i;
+                                aux.y = c.y+i;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        for (int i = 1; i < tam_mapa+1; i++) {
+                            y++;
+                            x--;
+                            if (y > 0 && y < tam_mapa+1 && x > 0 && x < tam_mapa+1) {
+                                res = disparo(c.x-i-1, c.y+i-1);
+                                if(res == 'a') {
+                                    coord[total-1].x = z.x;
+                                    coord[total-1].y = -z.y;
+                                    aux.x = c.x-i-1;
+                                    aux.y = c.y+i-1;
+                                    marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                    coord[0].x = c.x;
+                                    coord[0].y = c.y;
+                                    break;
+                                }
+                                if(res == 'h')   {
+                                    coord[total-1].x = 0;
+                                    coord[total-1].y = 0;  // Reset del estado de persecución
+                                    aux.x = c.x-i;
+                                    aux.y = c.y+i;
+                                    marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                    marcarAgua(tam_mapa, aux, coord);
+                                    barajar(coord, tam_mapa*tam_mapa);
+                                    cazador(tam_mapa, coord);
+                                    break;
+                                }
+                            }
+                            else {
+                                z.x = z.x;
+                                z.y = -z.y;
+                                coord[total-1].x = z.x;
+                                coord[total-1].y = z.y;
+                                aux.x = c.x-i;
+                                aux.y = c.y+i;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(z.y < 0){
+                    if(c.x+c.y != inicio.x+inicio.y){
+                        for (int i = 1; i < tam_mapa+1; i++) {
+                            if(disparo(c.x-i-1, c.y-i-1) == 'h')   {
+                                coord[total-1].x = 0;
+                                coord[total-1].y = 0;  // Reset del estado de persecución
+                                aux.x = c.x-i;
+                                aux.y = c.y-i;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                barajar(coord, tam_mapa*tam_mapa);
+                                cazador(tam_mapa, coord);
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        for (int i = 1; i < tam_mapa+1; i++) {
+                            if(disparo(c.x+i-1, c.y-i-1) == 'h')   {
+                                coord[total-1].x = 0;
+                                coord[total-1].y = 0;  // Reset del estado de persecución
+                                aux.x = c.x+i;
+                                aux.y = c.y-i;
+                                marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
+                                marcarAgua(tam_mapa, aux, coord);
+                                barajar(coord, tam_mapa*tam_mapa);
+                                cazador(tam_mapa, coord);
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
-        // Priorizar en la lista para el siguiente disparo, etc.
-    }   else if (res == 'h')    {
-        marcarAgua(tam_mapa, c);
-        if (ultimo_estado.x < 0) {
-            Coordenada inicio = { -ultimo_estado.x, ultimo_estado.y };
-            marcarContornoBarcoHundido(c, inicio, tam_mapa);
-        } else {
-            // Barco de una sola celda
-            std::vector<Coordenada> contorno = obtenerAlrededor(c.x, c.y, tam_mapa);
-            for (const auto& a : contorno) {
-                marcarAgua(tam_mapa, a);
-            }
-        }
-        ultimaCoord = { 0, 0 };  // Reset del estado de persecución
     }
-    return c;
+    else {
+        if (res == 'h') {
+            Coordenada inicio;
+            inicio.x = absolute(coord[total-1].x);
+            inicio.y = absolute(coord[total-1].y);
+            coord[total-1].x = 0;
+            coord[total-1].y = 0;  // Reset del estado de persecución
+            marcarContornoBarcoHundido(c, inicio, tam_mapa, coord);
+            marcarAgua(tam_mapa, c, coord);
+            barajar(coord, tam_mapa*tam_mapa);
+            cazador(tam_mapa, coord);
+        }
+    }
 }
 
 
 
 //__Metodos_Auxiliares__
 
-void inicializar(int tam_mapa)  {
-    // Función para inicializar coordenadas aleatorias
-    int total_coord = tam_mapa * tam_mapa;
-    for (int i = 0; i < tam_mapa; ++i) {
-        for (int j = 0; j < tam_mapa; ++j) {
-            coord[i * tam_mapa + j].x = i;
-            coord[i * tam_mapa + j].y = j;
-        }
-    }
-    barajar(coord, total_coord);
-    indice = 0;
-}   void barajar(Coordenada *xy, int total) {
+void barajar(Coordenada coord[], int total) {
+    Coordenada aux = {0, 0};
     // Algoritmo Fisher-Yates para barajar las coordenadas
     for (int i = total - 1; i > 0; i--) {
         int j = rand() % (i + 1);
-        intercambiar(&xy[i], &xy[j]);
+        aux = coord[i];
+        coord[i] = coord[j];
+        coord[j] = aux;
     }
-}   void intercambiar(Coordenada *a, Coordenada *b) {
-    // Función para intercambiar dos elementos
-    Coordenada aux = *a;
-    *a = *b;
-    *b = aux;
 }
 
-void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocada) {
-    vector<Coordenada> alrededor = obtenerAlrededor(tocada.x, tocada.y, tam_mapa);
-    vector<Coordenada> aleatorios;
-    vector<Coordenada> agua;
-    // Clasificamos el contenido actual de coord[]
+Coordenada jugador(int tam_mapa, Coordenada coord[]) {
+    int indice = 0;
+    Coordenada agua;
+    agua.x = 0;
+    agua.y = 0;
+    // Devuelve una coordenada aleatoria no usada aún
+    while ((coord[indice].x == 0 || coord[indice].y == 0) && indice < tam_mapa * tam_mapa) {
+        ++indice;
+    }
+    if (indice < tam_mapa * tam_mapa) {
+        return coord[indice];
+    }
+    return agua; // No quedan coordenadas válidas
+}
+
+void marcarAgua(int tam_mapa, Coordenada c, Coordenada coord[]){
     for (int i = 0; i < tam_mapa * tam_mapa; ++i) {
-        Coordenada actual = coord[i];
-        if (actual.x == 10 && actual.y == 10) {
-            agua.push_back(actual);
-        } else if (actual.x == tocada.x && actual.y == tocada.y) {
-            continue; // Saltamos la tocada, se pone al final
-        } else {
-            bool esAlrededor = false;
-            for (const auto& a : alrededor) {
-                if (actual.x == a.x && actual.y == a.y) {
-                    esAlrededor = true;
-                    break;
-                }
-            }
-            if (!esAlrededor) {
-                aleatorios.push_back(actual);
-            }
+        if (coord[i].x == c.x && coord[i].y == c.y) {
+            coord[i].x = 0;
+            coord[i].y = 0;
+            break;
         }
     }
-    // Reconstruimos el vector coord[]
-    int index = 0;
-    for (const auto& a : alrededor) {
-        coord[index++] = a;
-    }
-    for (const auto& a : aleatorios) {
-        coord[index++] = a;
-    }
-    for (const auto& a : agua) {
-        coord[index++] = a;
-    }
-    Coordenada fin= { -tocada.x, tocada.y };
-    coord[index++] = fin;
-}   vector<Coordenada> obtenerAlrededor(int x, int y, int tam) {
-    // Obtiene las coordenadas alrededor de una celda
-    vector<Coordenada> alrededor;
+}
+
+void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocado, Coordenada coord[]) {
+    int total = tam_mapa*tam_mapa;
     int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int nx = 0;
+    int ny = 0;
+    int a = 0;
+    int b = 0;
+    Coordenada aux;
     for (int i = 0; i < 8; ++i) {
-        int nx = x + dx[i];
-        int ny = y + dy[i];
-        if (nx >= 0 && nx < tam && ny >= 0 && ny < tam) {
-            alrededor.push_back({nx, ny});
-        }
-    }
-    return alrededor;
-}
-
-void marcarAgua(int tam_mapa, Coordenada c){
-    for (int i = 0; i < tam_mapa * tam_mapa; ++i) {
-            if (coord[i].x == c.x && coord[i].y == c.y) {
-                coord[i] = {10, 10};
-                break;
+        nx = tocado.x + dx[i];
+        ny = tocado.y + dy[i];
+        if (nx > 0 && nx < tam_mapa+1 && ny > 0 && ny < tam_mapa+1) {
+            a = 0;
+            while((coord[a].x != nx || coord[a].y != ny) && a < total)  a++;
+            if (a < total) {
+                aux = coord[a];
+                coord[a] = coord[b];
+                coord[b++] = aux;
             }
         }
+    }
+    for (int i = 0; i < total; ++i) {
+        if (tocado.x == coord[i].x && tocado.y == coord[i].y) {
+            aux = coord[total-1];
+            coord[total-1].x = -tocado.x;
+            coord[total-1].y = tocado.y;
+            coord[i] = aux;
+        }
+    }
+}
+void marcarAlrededor(int x, int y, int tam, Coordenada coord[]) {
+    // Obtiene las coordenadas alrededor de una celda
+    int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};
+    int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int nx = 0;
+    int ny = 0;
+    Coordenada n;
+    for (int i = 0; i < 8; ++i) {
+        nx = x + dx[i];
+        ny = y + dy[i];
+        if (nx > 0 && nx < tam+1 && ny > 0 && ny < tam+1) {
+            n.x = nx;
+            n.y = ny;
+            marcarAgua(tam, n, coord);
+        }
+    }
 }
 
-void marcarContornoBarcoHundido(Coordenada fin, Coordenada inicio, int tam_mapa) {
-    int dx = (fin.x - inicio.x);
-    int dy = (fin.y - inicio.y);
-    if (dx != 0) dx = dx / abs(dx);
-    if (dy != 0) dy = dy / abs(dy);
-    Coordenada actual = inicio;
-    while (true) {
-        // Marcar la celda actual como agua
-        marcarAgua(tam_mapa, actual);
-        // Marcar el alrededor de la celda actual
-        std::vector<Coordenada> alrededores = obtenerAlrededor(actual.x, actual.y, tam_mapa);
-        for (const auto& a : alrededores) {
-            marcarAgua(tam_mapa, a);
+void marcarContornoBarcoHundido(Coordenada fin, Coordenada inicio, int tam_mapa, Coordenada coord[]) {
+    int aux = 0;
+    Coordenada inter;
+    if (fin.x == inicio.x) {
+        aux = absolute(inicio.y-fin.y);
+        for (int i = 0; i < aux+1; ++i) {
+            if (inicio.y < fin.y)   marcarAlrededor(inicio.x, inicio.y+i, tam_mapa, coord);
+            else    marcarAlrededor(fin.x, fin.y+i, tam_mapa, coord);
         }
-        // Avanzamos
-        if (actual.x == fin.x && actual.y == fin.y) break;
-        actual.x += dx;
-        actual.y += dy;
     }
+    if (fin.y == inicio.y) {
+        aux = absolute(inicio.x-fin.x);
+        for (int i = 0; i < aux+1; ++i) {
+            if (inicio.x < fin.x)   marcarAlrededor(inicio.x+i, inicio.y, tam_mapa, coord);
+            else    marcarAlrededor(fin.x+i, fin.y, tam_mapa, coord);
+        }
+    }
+    else {
+        aux = absolute(inicio.y-fin.y);
+        for (int i = 0; i < aux+1; ++i) {
+            if (inicio.y < fin.y) {
+                if (fin.y+fin.x != inicio.y+inicio.x)   marcarAlrededor(inicio.x+i, inicio.y+i, tam_mapa, coord);
+                else    marcarAlrededor(inicio.x-i, inicio.y+i, tam_mapa, coord);
+            }
+            else {
+                if (fin.y+fin.x != inicio.y+inicio.x) marcarAlrededor(fin.x+i, fin.y+i, tam_mapa, coord);
+                else    marcarAlrededor(fin.x+i, fin.y-i, tam_mapa, coord);
+            }
+        }
+    }
+    coord[0] = fin;
+}
+
+int absolute(int num) {
+    if(num >= 0) {
+        return num;
+    }
+    return -num;
 }

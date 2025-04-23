@@ -1,6 +1,8 @@
 #include "jugador0.h"
 #include <stdio.h>
 
+char res;
+
 void inicializar(int tam_mapa, Coordenada coord[])  {
     int total = tam_mapa * tam_mapa;
     // Devuelve una coordenada aleatoria no usada aún
@@ -36,11 +38,19 @@ void cazador(int tam_mapa, Coordenada coord[]) {
         Coordenada aux;
         // Aquí podrías insertar una lógica de búsqueda más avanzada
         if(z.x>=0) {
+                printf("  - inicio_cazador\n");
                 reordenarDespuesDeTocado(tam_mapa, c, coord);
+                printf("  - reorden\n");
+                for (int i = 0; i < total; i++) {
+                    printf("%d:(%d, %d), ", i, coord[i].x, coord[i].y);
+                }
+                printf("\n");
                 cazador(tam_mapa, coord);
+                printf("  - fin_cazador \n");
         }
         else    {
             if(c.y == absolute(z.y)) {
+                printf("  - y\n");
                 if(z.y > 0) {
                     for (int i = 1; i < tam_mapa+1; i++) {
                         x++;
@@ -65,6 +75,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                 marcarAgua(tam_mapa, aux, coord);
                                 barajar(coord, tam_mapa*tam_mapa);
                                 cazador(tam_mapa, coord);
+                                res = 'm';
                                 break;
                             }
                         }
@@ -92,12 +103,14 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                             marcarAgua(tam_mapa, aux, coord);
                             barajar(coord, tam_mapa*tam_mapa);
                             cazador(tam_mapa, coord);
+                            res = 'm';
                             break;
                         }
                     }
                 }
             }
             else if(c.x == abs(z.x)) {
+                                    printf("  - x\n");
                 if(z.y > 0) {
                     for (int i = 1; i < tam_mapa+1; i++) {
                         y++;
@@ -122,12 +135,13 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                 marcarAgua(tam_mapa, aux, coord);
                                 barajar(coord, tam_mapa*tam_mapa);
                                 cazador(tam_mapa, coord);
+                                res = 'm';
                                 break;
                             }
                         }
                         else {
                             coord[total-1].x = z.x;
-                            coord[total-1].y = z.y;
+                            coord[total-1].y = -z.y;
                             aux.x = c.x;
                             aux.y = c.y+i;
                             marcarContornoBarcoHundido(aux, inicio, tam_mapa, coord);
@@ -147,13 +161,16 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                             marcarAgua(tam_mapa, aux, coord);
                             barajar(coord, tam_mapa*tam_mapa);
                             cazador(tam_mapa, coord);
+                            res = 'm';
                             break;
                         }
                     }
                 }
             else {
+                                    printf("  - diagonal\n");
                 if(z.y > 0) {
                     if (c.x+c.y != inicio.x+inicio.y) {
+                            printf("  - diagonal '/' down \n");
                         for (int i = 1; i < tam_mapa+1; i++) {
                             y++;
                             x++;
@@ -178,6 +195,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                     marcarAgua(tam_mapa, aux, coord);
                                     barajar(coord, tam_mapa*tam_mapa);
                                     cazador(tam_mapa, coord);
+                                    res = 'm';
                                     break;
                                 }
                             }
@@ -195,6 +213,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                         }
                     }
                     else {
+                        printf("  - diagonal '\' down \n");
                         for (int i = 1; i < tam_mapa+1; i++) {
                             y++;
                             x--;
@@ -219,6 +238,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                     marcarAgua(tam_mapa, aux, coord);
                                     barajar(coord, tam_mapa*tam_mapa);
                                     cazador(tam_mapa, coord);
+                                    res = 'm';
                                     break;
                                 }
                             }
@@ -248,6 +268,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                 marcarAgua(tam_mapa, aux, coord);
                                 barajar(coord, tam_mapa*tam_mapa);
                                 cazador(tam_mapa, coord);
+                                res = 'm';
                                 break;
                             }
                         }
@@ -263,6 +284,7 @@ void cazador(int tam_mapa, Coordenada coord[]) {
                                 marcarAgua(tam_mapa, aux, coord);
                                 barajar(coord, tam_mapa*tam_mapa);
                                 cazador(tam_mapa, coord);
+                                res = 'm';
                                 break;
                             }
                         }
@@ -284,6 +306,13 @@ void cazador(int tam_mapa, Coordenada coord[]) {
             cazador(tam_mapa, coord);
         }
     }
+    if (res == 'm') {
+        for (int i = 0; i < total; i++) {
+            printf("%d:(%d, %d), ", i, coord[i].x, coord[i].y);
+        }
+        printf("\n");
+    }
+    printf(" . ");
 }
 
 
@@ -338,14 +367,23 @@ void reordenarDespuesDeTocado(int tam_mapa, Coordenada tocado, Coordenada coord[
     for (int i = 0; i < 8; ++i) {
         nx = tocado.x + dx[i];
         ny = tocado.y + dy[i];
+        printf("%d ->(%d, %d) \n", i, nx, ny);
         if (nx > 0 && nx < tam_mapa+1 && ny > 0 && ny < tam_mapa+1) {
             a = 0;
-            while((coord[a].x != nx || coord[a].y != ny) && a < total)  a++;
+            while((coord[a].x != nx || coord[a].y != ny) && a < total){
+                a++;
+                //printf("  - bucle reordenar");
+            }
             if (a < total) {
+                printf("  - cambio reordenar\n");
                 aux = coord[a];
                 coord[a] = coord[b];
                 coord[b++] = aux;
             }
+            for (int i = 0; i < total; i++) {
+                printf("%d:(%d, %d), ", i, coord[i].x, coord[i].y);
+            }
+            printf("\n");
         }
     }
     for (int i = 0; i < total; ++i) {
